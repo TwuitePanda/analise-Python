@@ -1,18 +1,5 @@
-import os
-import time
-import json
-import csv
-from sys import argv
-from random import random
-from datetime import datetime
-
-import requests
-import pandas as pd
-import seaborn as sns
-
-
 def extrair_dados():
-    url = 'https://www2.cetip.com.br/ConsultarTaxaDi/ConsultarTaxaDICetip.aspx'
+    url = 'https://api.bcb.gov.br/dados/serie/bcdata.sgs.4392/dados'
 
     for _ in range(10):
         data_e_hora = datetime.now()
@@ -29,8 +16,9 @@ def extrair_dados():
             print("Erro, parando a execução.")
             raise exc
         else:
-            dado = json.loads(response.text)
-            cdi = float(dado['taxa'].replace(',', '.')) + (random() - 0.5)
+            dados = json.loads(response.text)
+            ultimo_dado = dados[-1]
+            cdi = float(ultimo_dado['valor'].replace(',', '.')) + (random() - 0.5)
 
         if not os.path.exists('taxa-cdi.csv'):
             with open('taxa-cdi.csv', mode='w', encoding='utf8') as fp:
@@ -42,20 +30,3 @@ def extrair_dados():
         time.sleep(2 + (random() - 0.5))
 
     print("Extração concluída com sucesso!")
-
-
-def gerar_grafico(nome_do_grafico):
-    df = pd.read_csv('taxa-cdi.csv')
-    grafico = sns.lineplot(x=df['hora'], y=df['taxa'])
-    grafico.set_xticklabels(labels=df['hora'], rotation=90)
-    grafico.get_figure().savefig(f"{nome_do_grafico}.png")
-    print(f"Gráfico '{nome_do_grafico}.png' gerado com sucesso!")
-
-
-if __name__ == '__main__':
-    if len(argv) < 2:
-        print("Uso: python analise.py <nome-do-grafico>")
-    else:
-        nome_do_grafico = argv[1]
-        extrair_dados()
-        gerar_grafico(nome_do_grafico)
