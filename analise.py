@@ -1,3 +1,10 @@
+import os
+import time
+import json
+import requests
+from datetime import datetime
+from random import random
+
 def extrair_dados():
     url = 'https://api.bcb.gov.br/dados/serie/bcdata.sgs.4392/dados'
 
@@ -18,7 +25,8 @@ def extrair_dados():
         else:
             dados = json.loads(response.text)
             ultimo_dado = dados[-1]
-            cdi = float(ultimo_dado['valor'].replace(',', '.')) + (random() - 0.5)
+            cdi = float(ultimo_dado['valor'].replace(
+                ',', '.')) + (random() - 0.5)
 
         if not os.path.exists('taxa-cdi.csv'):
             with open('taxa-cdi.csv', mode='w', encoding='utf8') as fp:
